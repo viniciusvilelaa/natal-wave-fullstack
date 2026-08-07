@@ -14,42 +14,80 @@ datasource db {
 }
 
 
+enum CardinalDirection {
+  N
+  NE
+  E
+  SE
+  S
+  SW
+  W
+  NW
+}
+
+enum BottomType {
+  AREIA
+  RECIFE
+  PEDRA
+  LAJE
+  MISTO
+}
+
+enum Platform {
+  ios
+  android
+}
+
+// User
+
 model User {
-  id           String   @id @default(cuid())
+  id           String @id @default(cuid())
   name         String
-  email        String   @unique
+  email        String @unique
   passwordHash String
 
   favorites     Favorite[]
   searchHistory SearchHistory[]
   refreshTokens RefreshToken[]
+  alerts        Alert[]
+  pushTokens    PushToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+// Beach 
+
 model Beach {
-  id                  String  @id @default(cuid())
-  name                String
-  city                String
-  state               String
-  country             String
-  imageUrl            String?
-  description         String?
-  bestSwellDirection  String
-  bestWindDirection   String
+  id          String  @id @default(cuid())
+  name        String
+  city        String
+  state       String
+  country     String
+  imageUrl    String?
+  description String?
 
   latitude  Float
   longitude Float
 
+  bestSwellDirections CardinalDirection[]
+  bestWindDirections  CardinalDirection[]
+  bottomType          BottomType?
+
   favorites     Favorite[]
   searchHistory SearchHistory[]
+  alerts        Alert[]
+  forecastCache ForecastCache?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([latitude, longitude])
 }
+
+
+// Favoritos
+
 
 model Favorite {
   userId  String
@@ -62,6 +100,10 @@ model Favorite {
 
   @@id([userId, beachId])
 }
+
+
+// Histórico de busca (upsert, sem duplicar linha)
+
 
 model SearchHistory {
   id      String @id @default(cuid())
@@ -79,6 +121,10 @@ model SearchHistory {
   @@index([lastSearchedAt])
 }
 
+
+// Auth - Refresh Token (rotacionado, revogável)
+
+
 model RefreshToken {
   id     String @id @default(cuid())
   userId String
@@ -92,4 +138,60 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+
+// Alertas de condição
+
+
+model Alert {
+  id      String @id @default(cuid())
+  userId  String
+  beachId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  beach Beach @relation(fields: [beachId], references: [id], onDelete: Cascade)
+
+  minWaveHeight   Float?
+  maxWaveHeight   Float?
+  swellDirections CardinalDirection[]
+  active          Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([beachId, active])
+}
+
+
+// Push notification tokens
+
+
+model PushToken {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token    String   @unique
+  platform Platform
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+
+// Cache de previsão (Stormglass, refresh de 3 em 3h)
+
+
+model ForecastCache {
+  id      String @id @default(cuid())
+  beachId String @unique
+  beach   Beach  @relation(fields: [beachId], references: [id], onDelete: Cascade)
+
+  payload   Json
+  fetchedAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([expiresAt])
 }
