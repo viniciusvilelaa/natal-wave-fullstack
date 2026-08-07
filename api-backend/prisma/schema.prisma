@@ -10,4 +10,86 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+
+  favorites     Favorite[]
+  searchHistory SearchHistory[]
+  refreshTokens RefreshToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Beach {
+  id                  String  @id @default(cuid())
+  name                String
+  city                String
+  state               String
+  country             String
+  imageUrl            String?
+  description         String?
+  bestSwellDirection  String
+  bestWindDirection   String
+
+  latitude  Float
+  longitude Float
+
+  favorites     Favorite[]
+  searchHistory SearchHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([latitude, longitude])
+}
+
+model Favorite {
+  userId  String
+  beachId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  beach Beach @relation(fields: [beachId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, beachId])
+}
+
+model SearchHistory {
+  id      String @id @default(cuid())
+  userId  String
+  beachId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  beach Beach @relation(fields: [beachId], references: [id], onDelete: Cascade)
+
+  searchCount    Int      @default(1)
+  lastSearchedAt DateTime @default(now())
+
+  @@unique([userId, beachId])
+  @@index([userId])
+  @@index([lastSearchedAt])
+}
+
+model RefreshToken {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash       String    @unique
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  replacedByToken String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
