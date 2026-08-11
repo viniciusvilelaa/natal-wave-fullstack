@@ -15,6 +15,7 @@ const envSchema = z.object({
   FORECAST_CACHE_TTL_HOURS: z.coerce.number().default(3),
 
   NEARBY_BEACH_RADIUS_KM: z.coerce.number().default(50),
+  BCRYPT_SALT_ROUNDS: z.coerce.number().default(10)
 });
 
 const parsed = envSchema.safeParse(process.env);
