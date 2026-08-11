@@ -16,6 +16,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
@@ -23,13 +24,15 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
+    "pg": "^8.23.0",
     "zod": "^4.4.3"
   },
   "allowScripts": {
     "bcrypt@6.0.0": true,
     "prisma@7.9.1": true,
     "@prisma/engines@7.9.1": true,
-    "esbuild@0.28.1": true
+    "esbuild@0.28.1": true,
+    "fsevents@2.3.3": true
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -37,6 +40,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.2",
+    "@types/pg": "^8.21.0",
     "prisma": "^7.9.1",
     "tsx": "^4.23.9",
     "typescript": "^7.0.2"
