@@ -100,4 +100,4 @@ Toda a comunicação é realizada através de requisições HTTP autenticadas vi
 
 ## Status do Projeto
 
-Em desenvolvimento ativo
+Em desenvolvimento ativo (backend)
