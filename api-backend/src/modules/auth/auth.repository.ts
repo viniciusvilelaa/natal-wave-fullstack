@@ -4,7 +4,7 @@ export const authRepository = {
 
     //Encontra usuario especifico atraves do email
     findUserByEmail(email: string) {
-        return prisma.user.findUnique({ where: { email } });
+        return prisma.user.findUnique({ where: { email }});
     },
 
     //Cria usuario
