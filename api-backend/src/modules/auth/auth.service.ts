@@ -1,6 +1,6 @@
 import { authRepository } from "./auth.repository";
 import { ApiError } from "../../utils/api-error";
-import { LoginInput, RegisterInput } from "./auth.validation";
+import { LoginInput, RefreshTokenInput, RegisterInput } from "./auth.validation";
 import { compareHashPassword, hashPassword } from "../../utils/hash-password";
 import { signToken } from "../../utils/jwt";
 import { generateRefreshToken, getRefreshTokenExpiryDate, hashRefreshToken } from "../../utils/refreshToken";
@@ -66,4 +66,45 @@ export async function login(data: LoginInput){
     const { passwordHash, ...userWithoutPassword } = user;
 
     return { user: userWithoutPassword, accessToken, refreshToken: rawRefreshToken };
+}
+
+
+export async function refresh(rawRefreshToken: string){
+    
+
+    const tokenHash = hashRefreshToken(rawRefreshToken);
+
+    const refreshToken = await authRepository.findRefreshTokenByHash(tokenHash);
+
+    if(!refreshToken?.user){
+        throw new ApiError(401, "Invalid refresh token!");
+    }
+
+    const isExpired = refreshToken.expiresAt < new Date();
+
+    if(isExpired){
+        throw new ApiError(401,"Refresh token is expired, please log in again");
+    }
+
+    if(refreshToken.revokedAt){
+        await authRepository.revokeAllUserRefreshTokens(refreshToken.userId);
+        throw new ApiError(401, "Session compromised, please log in again")
+    }
+
+    const accessToken = signToken({sub: refreshToken.userId, email: refreshToken.user.email});
+    const newRawRefreshToken = generateRefreshToken();
+    const newTokenHash = hashRefreshToken(newRawRefreshToken);
+    const newExpireAt = getRefreshTokenExpiryDate();
+
+    await authRepository.createRefreshToken({
+        userId: refreshToken.userId,
+        tokenHash: newTokenHash,
+        expiresAt: newExpireAt
+    });
+
+    await authRepository.revokeRefreshToken(refreshToken.id, newTokenHash);
+
+    return { accessToken, refreshToken: newRawRefreshToken}
+
+
 }
