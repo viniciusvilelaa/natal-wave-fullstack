@@ -36,13 +36,21 @@ enum Platform {
   android
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  APPLE
+}
+
 // User
 
 model User {
-  id           String @id @default(cuid())
+  id           String       @id @default(cuid())
   name         String
-  email        String @unique
-  passwordHash String
+  email        String       @unique
+  passwordHash String?
+  provider     AuthProvider @default(LOCAL)
+  providerId   String?
 
   favorites     Favorite[]
   searchHistory SearchHistory[]
@@ -52,6 +60,8 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerId])
 }
 
 // Beach 
