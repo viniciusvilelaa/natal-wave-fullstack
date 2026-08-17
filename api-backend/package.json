@@ -23,8 +23,10 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.2",
+    "google-auth-library": "^11.0.2",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^4.1.0",
     "morgan": "^1.11.0",
     "pg": "^8.23.0",
     "zod": "^4.4.3"
@@ -44,7 +46,7 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.1.2",
     "@types/pg": "^8.21.0",
-    "prisma": "^7.9.1",
+    "prisma": "^6.12.0",
     "tsx": "^4.23.9",
     "typescript": "^7.0.2"
   }
