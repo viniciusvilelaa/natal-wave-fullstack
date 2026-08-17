@@ -4,10 +4,11 @@ import { LoginInput, RefreshTokenInput, RegisterInput } from "./auth.validation"
 import { compareHashPassword, hashPassword } from "../../utils/hash-password";
 import { signToken } from "../../utils/jwt";
 import { generateRefreshToken, getRefreshTokenExpiryDate, hashRefreshToken } from "../../utils/refreshToken";
+import { success } from "zod";
 
 type RegisterServiceInput = Omit<RegisterInput, "confirmPassword">;
 
-
+//Funcao para registrar usuario novo e gerar automaticamente o refreshToken
 export async function registerUser(data: RegisterServiceInput) {
 
     const existUser = await authRepository.findUserByEmail(data.email);
@@ -39,6 +40,7 @@ export async function registerUser(data: RegisterServiceInput) {
     return { user, acessToken, refreshToken: rawRefreshToken }
 }
 
+//Funcao de login de usuario, verifica credenciais e cria refresh token
 export async function login(data: LoginInput){
     const user = await authRepository.findUserByEmail(data.email);
 
@@ -68,7 +70,7 @@ export async function login(data: LoginInput){
     return { user: userWithoutPassword, accessToken, refreshToken: rawRefreshToken };
 }
 
-
+//Atualiza o refreshToken
 export async function refresh(rawRefreshToken: string){
     
 
@@ -107,4 +109,17 @@ export async function refresh(rawRefreshToken: string){
     return { accessToken, refreshToken: newRawRefreshToken}
 
 
+}
+
+//Revoga o token para fazer lgout
+export async function Logout(rawRefreshToken: string){
+    const tokenHash = hashRefreshToken(rawRefreshToken);
+
+    const refreshToken = await authRepository.findRefreshTokenByHash(tokenHash);
+
+    if(!refreshToken){
+        return 
+    }
+
+    await authRepository.revokeRefreshToken(refreshToken.id);
 }
