@@ -28,6 +28,14 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, "Refresh token is required"),
 });
 
+export const oauthLoginSchema = z.object({
+  provider: z.enum(["GOOGLE", "APPLE"], {
+    message: "Invalid OAuth provider. Provider must be GOOGLE or APPLE",
+  }),
+  idToken: z.string().trim().min(1, "ID token is required"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+export type OAuthLoginInput = z.infer<typeof oauthLoginSchema>;
