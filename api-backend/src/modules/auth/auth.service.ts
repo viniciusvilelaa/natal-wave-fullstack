@@ -1,10 +1,9 @@
 import { authRepository } from "./auth.repository";
 import { ApiError } from "../../utils/api-error";
-import { LoginInput, RefreshTokenInput, RegisterInput } from "./auth.validation";
+import { LoginInput, RegisterInput } from "./auth.validation";
 import { compareHashPassword, hashPassword } from "../../utils/hash-password";
 import { signToken } from "../../utils/jwt";
 import { generateRefreshToken, getRefreshTokenExpiryDate, hashRefreshToken } from "../../utils/refreshToken";
-import { success } from "zod";
 
 type RegisterServiceInput = Omit<RegisterInput, "confirmPassword">;
 
@@ -41,20 +40,20 @@ export async function registerUser(data: RegisterServiceInput) {
 }
 
 //Funcao de login de usuario, verifica credenciais e cria refresh token
-export async function login(data: LoginInput){
+export async function login(data: LoginInput) {
     const user = await authRepository.findUserByEmail(data.email);
 
-    if(!user){
+    if (!user) {
         throw new ApiError(401, "Invalid email or password");
     }
 
     const isPasswordValid = await compareHashPassword(data.password, user.passwordHash);
 
-    if(!isPasswordValid){
+    if (!isPasswordValid) {
         throw new ApiError(401, "Invalid email or password");
     }
-    
-    const accessToken = signToken({sub: user.id, email: user.email});
+
+    const accessToken = signToken({ sub: user.id, email: user.email });
     const rawRefreshToken = generateRefreshToken();
     const tokenHash = hashRefreshToken(rawRefreshToken);
     const expiresAt = getRefreshTokenExpiryDate();
@@ -71,29 +70,29 @@ export async function login(data: LoginInput){
 }
 
 //Atualiza o refreshToken
-export async function refresh(rawRefreshToken: string){
-    
+export async function refresh(rawRefreshToken: string) {
+
 
     const tokenHash = hashRefreshToken(rawRefreshToken);
 
     const refreshToken = await authRepository.findRefreshTokenByHash(tokenHash);
 
-    if(!refreshToken?.user){
+    if (!refreshToken?.user) {
         throw new ApiError(401, "Invalid refresh token!");
     }
 
     const isExpired = refreshToken.expiresAt < new Date();
 
-    if(isExpired){
-        throw new ApiError(401,"Refresh token is expired, please log in again");
+    if (isExpired) {
+        throw new ApiError(401, "Refresh token is expired, please log in again");
     }
 
-    if(refreshToken.revokedAt){
+    if (refreshToken.revokedAt) {
         await authRepository.revokeAllUserRefreshTokens(refreshToken.userId);
         throw new ApiError(401, "Session compromised, please log in again")
     }
 
-    const accessToken = signToken({sub: refreshToken.userId, email: refreshToken.user.email});
+    const accessToken = signToken({ sub: refreshToken.userId, email: refreshToken.user.email });
     const newRawRefreshToken = generateRefreshToken();
     const newTokenHash = hashRefreshToken(newRawRefreshToken);
     const newExpireAt = getRefreshTokenExpiryDate();
@@ -106,19 +105,19 @@ export async function refresh(rawRefreshToken: string){
 
     await authRepository.revokeRefreshToken(refreshToken.id, newTokenHash);
 
-    return { accessToken, refreshToken: newRawRefreshToken}
+    return { accessToken, refreshToken: newRawRefreshToken }
 
 
 }
 
 //Revoga o token para fazer lgout
-export async function Logout(rawRefreshToken: string){
+export async function logout(rawRefreshToken: string) {
     const tokenHash = hashRefreshToken(rawRefreshToken);
 
     const refreshToken = await authRepository.findRefreshTokenByHash(tokenHash);
 
-    if(!refreshToken){
-        return 
+    if (!refreshToken) {
+        return;
     }
 
     await authRepository.revokeRefreshToken(refreshToken.id);
