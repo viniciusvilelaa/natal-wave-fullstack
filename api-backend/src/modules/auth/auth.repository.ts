@@ -21,6 +21,20 @@ export const authRepository = {
         });
     },
 
+    //Cria usuario utilizando OAUTH sem passwordHash
+    createOAuthUser({provider, providerId, email, name}: { provider: AuthProvider, providerId: string, email: string, name?: string}){
+        return prisma.user.create({
+            data: {
+                provider,
+                providerId,
+                email,
+                name: name ?? email.split('@')[0],
+                passwordHash: null
+            }
+        })
+
+    },
+
     //Encontra usuario pelo ID
     findUserById(id: string) {
         return prisma.user.findUnique({
