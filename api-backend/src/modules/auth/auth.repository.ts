@@ -1,10 +1,11 @@
+import { AuthProvider } from "../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma"
 
 export const authRepository = {
 
     //Encontra usuario especifico atraves do email
     findUserByEmail(email: string) {
-        return prisma.user.findUnique({ where: { email }});
+        return prisma.user.findUnique({ where: { email } });
     },
 
     //Cria usuario
@@ -63,5 +64,13 @@ export const authRepository = {
             data: { revokedAt: new Date() },
         });
     },
+
+    findByProviderId(provider: AuthProvider, providerId: string) {
+        return prisma.user.findUnique({
+            where: {
+                provider_providerId: { provider, providerId }
+            }
+        })
+    }
 
 }

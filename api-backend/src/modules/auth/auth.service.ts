@@ -43,7 +43,7 @@ export async function registerUser(data: RegisterServiceInput) {
 export async function login(data: LoginInput) {
     const user = await authRepository.findUserByEmail(data.email);
 
-    if (!user) {
+    if (!user || !user.passwordHash) {
         throw new ApiError(401, "Invalid email or password");
     }
 
