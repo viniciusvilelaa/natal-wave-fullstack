@@ -85,6 +85,13 @@ export const authRepository = {
                 provider_providerId: { provider, providerId }
             }
         })
+    },
+
+    linkOAuthToUser(userId: string, {provider, providerId}: {provider: AuthProvider; providerId: string}){
+        return prisma.user.update({
+            where: {id: userId},
+            data: {provider, providerId}
+        });
     }
 
 }
