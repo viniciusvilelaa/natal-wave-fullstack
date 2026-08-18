@@ -4,6 +4,9 @@ import { LoginInput, RegisterInput } from "./auth.validation";
 import { compareHashPassword, hashPassword } from "../../utils/hash-password";
 import { signToken } from "../../utils/jwt";
 import { generateRefreshToken, getRefreshTokenExpiryDate, hashRefreshToken } from "../../utils/refreshToken";
+import { AuthProvider } from "../../generated/prisma/enums";
+import { verifyGoogleToken } from "../../utils/oauth/google";
+import { verifyAppleToken } from "../../utils/oauth/apple";
 
 type RegisterServiceInput = Omit<RegisterInput, "confirmPassword">;
 
@@ -121,4 +124,53 @@ export async function logout(rawRefreshToken: string) {
     }
 
     await authRepository.revokeRefreshToken(refreshToken.id);
+}
+
+//Login utilizando OAUTH
+export async function loginWithOAuth(provider: AuthProvider, idToken: string){
+
+    //Verifica o token e retorna as informacoes do usuario fornercida pelo provider
+    const {sub: providerId, email, name} = provider === 'GOOGLE' 
+        ? await verifyGoogleToken(idToken) 
+            : await verifyAppleToken(idToken);
+
+    //Caso o provider nao forneça email cai no catch de erro
+    if(!email){
+        throw new ApiError(400, "OAuth provider did not return a email");
+    }
+
+    
+    let oauthUser = await authRepository.findByProviderId(provider, providerId);
+    
+    //Existe usuario com esse provider ja?
+    if(!oauthUser){
+
+        //Verifica se existe conta cadastrada com o email do oauth
+        let existingUser = await authRepository.findUserByEmail(email);
+
+        //Se existir faz update do usuario e adiciona as informacoes do provider OAUTH
+        if(existingUser){
+            oauthUser = await authRepository.linkOAuthToUser(existingUser.id, {provider, providerId});
+        
+        } else {
+            
+            //Se nao existir nenhum usuario cria um usuario OAuth direto
+            oauthUser = await authRepository.createOAuthUser({provider, providerId, email, name});
+        }
+    }
+
+    //Emite refresh token
+    const acessToken = signToken({sub: oauthUser.id, email: oauthUser.email});
+    const refreshToken = generateRefreshToken();
+    const hashedRefreshToken = hashRefreshToken(refreshToken);
+    
+    await authRepository.createRefreshToken({
+        userId: oauthUser.id,
+        tokenHash: hashedRefreshToken,
+        expiresAt: getRefreshTokenExpiryDate()
+    });
+
+    return {acessToken, refreshToken, user: {id: oauthUser.id, email: oauthUser.email, name: oauthUser.name}}
+
+    
 }
