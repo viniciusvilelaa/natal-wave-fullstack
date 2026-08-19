@@ -3,7 +3,7 @@ import * as authController from "./auth.controller";
 import { validate } from "../../middleware/schema.middleware"
 import { authMiddleware } from "../../middleware/auth.middleware";
 import { asyncHandler } from "../../utils/async-handler";
-import { registerSchema, loginSchema, refreshTokenSchema } from "./auth.validation";
+import { registerSchema, loginSchema, refreshTokenSchema, oauthLoginSchema } from "./auth.validation";
 
 const router = Router();
 
@@ -17,6 +17,12 @@ router.post(
     "/login",
     validate(loginSchema),
     asyncHandler(authController.login)
+);
+
+router.post(
+    "/oauth",
+    validate(oauthLoginSchema),
+    asyncHandler(authController.oauthLogin)
 );
 
 router.post(
