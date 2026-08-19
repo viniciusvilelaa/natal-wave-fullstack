@@ -11,7 +11,7 @@ const client = jwksClient({
 
 function getAppleSigningKey(header: JwtHeader, callback: SigningKeyCallback) {
   if (!header.kid) {
-    return callback(new Error("Header do token da Apple não contém 'kid'"));
+    return callback(new Error("Apple token header does not contain 'kid'"));
   }
 
   client.getSigningKey(header.kid, (err, key) => {
@@ -31,13 +31,13 @@ export interface AppleTokenPayload {
 }
 
 /**
- * Valida o ID Token da Apple garantindo a verificação de assinatura (via JWKS), expiração,
- * emissor esperado (iss: https://appleid.apple.com) e audiência/Client ID (aud).
+ * Validates Apple ID Token verifying signature (via JWKS), expiration,
+ * expected issuer (iss: https://appleid.apple.com) and audience/Client ID (aud).
  */
 export async function verifyAppleToken(idToken: string): Promise<AppleTokenPayload> {
   const appleClientId = process.env.APPLE_CLIENT_ID;
   if (!appleClientId) {
-    throw new ApiError(500, "APPLE_CLIENT_ID não configurado no ambiente");
+    throw new ApiError(500, "APPLE_CLIENT_ID is not configured in environment");
   }
 
   const expectedIssuer = "https://appleid.apple.com";
@@ -54,7 +54,7 @@ export async function verifyAppleToken(idToken: string): Promise<AppleTokenPaylo
       (err, decoded) => {
         if (err || !decoded) {
           return reject(
-            new ApiError(401, `Token da Apple inválido: ${err?.message || "Assinatura ou expiração inválida"}`)
+            new ApiError(401, `Invalid Apple token: ${err?.message || "Invalid signature or expiration date."}`)
           );
         }
 
@@ -62,16 +62,16 @@ export async function verifyAppleToken(idToken: string): Promise<AppleTokenPaylo
 
         // Validação explícita de ISS (Emissor esperado)
         if (payload.iss !== expectedIssuer) {
-          return reject(new ApiError(401, `Emissor (iss) do token da Apple inválido: ${payload.iss}`));
+          return reject(new ApiError(401, `Invalid Apple token issuer (iss): ${payload.iss}`));
         }
 
         // Validação explícita de AUD (Client ID esperado)
         if (payload.aud !== appleClientId) {
-          return reject(new ApiError(401, `Audiência (aud) do token da Apple incompatível: ${payload.aud}`));
+          return reject(new ApiError(401, `Apple token audience (aud) is incompatible: ${payload.aud}`));
         }
 
         if (!payload.sub) {
-          return reject(new ApiError(401, "Token da Apple não contém a identificação 'sub'"));
+          return reject(new ApiError(401, "Apple token does not contain 'sub' identification"));
         }
 
         resolve({

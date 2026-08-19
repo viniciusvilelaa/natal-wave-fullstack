@@ -17,7 +17,7 @@ export interface GoogleTokenPayload {
 export async function verifyGoogleToken(idToken: string): Promise<GoogleTokenPayload> {
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   if (!googleClientId) {
-    throw new ApiError(500, "GOOGLE_CLIENT_ID não configurado no ambiente");
+    throw new ApiError(500, "GOOGLE_CLIENT_ID did not configured in envirionment");
   }
 
   let ticket;
@@ -27,27 +27,27 @@ export async function verifyGoogleToken(idToken: string): Promise<GoogleTokenPay
       audience: googleClientId,
     });
   } catch (error: any) {
-    throw new ApiError(401, `Token do Google inválido: ${error?.message || "Assinatura ou expiração inválida"}`);
+    throw new ApiError(401, `Invalid GOOGLE token inválido: ${error?.message || "Invalid subscription or expiration date."}`);
   }
 
   const payload = ticket.getPayload();
   if (!payload) {
-    throw new ApiError(401, "Payload do token do Google é inválido");
+    throw new ApiError(401, "Invalid GOOGLE payload");
   }
 
   // Validação explícita de ISS (Emissor esperado)
   const validIssuers = ["accounts.google.com", "https://accounts.google.com"];
   if (!payload.iss || !validIssuers.includes(payload.iss)) {
-    throw new ApiError(401, `Emissor (iss) do token do Google inválido: ${payload.iss}`);
+    throw new ApiError(401, `Invalid Google token issuer(s): ${payload.iss}`);
   }
 
   // Validação explícita de AUD (Client ID esperado)
   if (payload.aud !== googleClientId) {
-    throw new ApiError(401, `Audiência (aud) do token do Google incompatível: ${payload.aud}`);
+    throw new ApiError(401, `Google token audience (aud) is incompatible.: ${payload.aud}`);
   }
 
   if (!payload.sub || !payload.email) {
-    throw new ApiError(401, "Token do Google não contém as informações mínimas de identificação (sub, email)");
+    throw new ApiError(401, "Google token does not contain the minimum identifying information (sub, email).");
   }
 
   return {
