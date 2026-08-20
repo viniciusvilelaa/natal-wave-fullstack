@@ -5,6 +5,8 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import authRoutes from "./modules/auth/auth.routes";
 import { errorMiddleware } from "./middleware/error.middleware";
+import router from "./routes";
+import { notFoundMiddleware } from "./middleware/notFoundMiddleware";
 
 const app = express();
 
@@ -33,9 +35,10 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 
 // Rotas da aplicação
-app.use("/api/auth", authRoutes);
+app.use("/api", router);
 
 // Middleware global de tratamento de erros
+app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 export default app;
