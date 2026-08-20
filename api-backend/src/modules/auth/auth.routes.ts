@@ -5,42 +5,42 @@ import { authMiddleware } from "../../middleware/auth.middleware";
 import { asyncHandler } from "../../utils/async-handler";
 import { registerSchema, loginSchema, refreshTokenSchema, oauthLoginSchema } from "./auth.validation";
 
-const router = Router();
+const authRouter = Router();
 
-router.post(
+authRouter.post(
     "/register",
     validate(registerSchema),
     asyncHandler(authController.register)
 );
 
-router.post(
+authRouter.post(
     "/login",
     validate(loginSchema),
     asyncHandler(authController.login)
 );
 
-router.post(
+authRouter.post(
     "/oauth",
     validate(oauthLoginSchema),
     asyncHandler(authController.oauthLogin)
 );
 
-router.post(
+authRouter.post(
     "/refresh",
     validate(refreshTokenSchema),
     asyncHandler(authController.refresh)
 );
 
-router.post(
+authRouter.post(
     "/logout",
     validate(refreshTokenSchema),
     asyncHandler(authController.logout)
 );
 
-router.get(
+authRouter.get(
     "/me",
     authMiddleware,
     asyncHandler(authController.me)
 );
 
-export default router;
+export default authRouter;
