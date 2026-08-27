@@ -1,8 +1,9 @@
 import { prisma } from "../../lib/prisma"
+import { Prisma } from "../../generated/prisma/client";
 import { CreateBeachInput, UpdateBeachInput } from "./beaches.validation";
 export const beachesRepository = {
 
-    createBeachSchema(data: CreateBeachInput) {
+    createBeachSchema(data: Prisma.BeachCreateInput) {
         return prisma.beach.create({ data });
     },
 
@@ -17,7 +18,7 @@ export const beachesRepository = {
         });
     },
 
-    updateBeach(id: string, data: UpdateBeachInput) {
+    updateBeach(id: string, data: Prisma.BeachUpdateInput) {
         return prisma.beach.update({
             where: { id },
             data
