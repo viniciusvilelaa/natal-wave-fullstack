@@ -1,6 +1,5 @@
-import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../lib/prisma"
-import { BeachIdParamInput, cardinalDirectionEnum, CreateBeachInput, UpdateBeachInput } from "./beaches.validation";
+import { CreateBeachInput, UpdateBeachInput } from "./beaches.validation";
 export const beachesRepository = {
 
     createBeachSchema(data: CreateBeachInput) {
