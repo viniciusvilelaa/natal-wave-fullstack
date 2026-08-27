@@ -1,15 +1,39 @@
 import { prisma } from "../../lib/prisma"
 import { Prisma } from "../../generated/prisma/client";
-import { CreateBeachInput, UpdateBeachInput } from "./beaches.validation";
+import { CreateBeachInput, SearchBeachQueryInput, UpdateBeachInput } from "./beaches.validation";
 export const beachesRepository = {
 
-    createBeachSchema(data: Prisma.BeachCreateInput) {
+    createBeach(data: Prisma.BeachCreateInput) {
         return prisma.beach.create({ data });
     },
 
 
-    findAllBeach() {
-        return prisma.beach.findMany();
+    findAll(filters: SearchBeachQueryInput) {
+        const { query, city, state, page, limit } = filters;
+
+        const where: Prisma.BeachWhereInput = {
+            ...(query && {
+                OR: [
+                    { name: { contains: query, mode: 'insensitive' } },
+                    { city: { contains: query, mode: 'insensitive' } }
+                ],
+            }),
+            ...(city && { city: { equals: city, mode: "insensitive" } }),
+            ...(state && { state: { equals: state, mode: "insensitive" } }),
+
+        };
+
+        return Promise.all([
+            prisma.beach.findMany({
+                where,
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: { name: "asc" }
+            }),
+            prisma.beach.count({where})
+        ]);
+        
+
     },
 
     findById(id: string) {
@@ -18,14 +42,14 @@ export const beachesRepository = {
         });
     },
 
-    updateBeach(id: string, data: Prisma.BeachUpdateInput) {
+    update(id: string, data: Prisma.BeachUpdateInput) {
         return prisma.beach.update({
             where: { id },
             data
         });
     },
 
-    deleteBeach(id: string) {
+    delete(id: string) {
         return prisma.beach.delete({
             where: { id }
         })
