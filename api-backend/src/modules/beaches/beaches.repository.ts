@@ -7,8 +7,19 @@ export const beachesRepository = {
         return prisma.beach.create({ data });
     },
 
+    findAll(){
+        return prisma.beach.findMany()
+    },
 
-    findAll(filters: SearchBeachQueryInput) {
+    findByNameAndCity(name: string, city: string){
+        return prisma.beach.findFirst({where: {
+            name: {equals: name, mode: "insensitive"},
+            city: {equals: city, mode: "insensitive"}
+        }});
+    },
+
+
+    findMany(filters: SearchBeachQueryInput) {
         const { query, city, state, page, limit } = filters;
 
         const where: Prisma.BeachWhereInput = {
