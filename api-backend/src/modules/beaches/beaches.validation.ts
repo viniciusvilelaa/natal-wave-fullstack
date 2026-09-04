@@ -63,6 +63,7 @@ export const nearbyBeachQuerySchema = z.object({
   radius: z.coerce.number().positive("Radius must be a positive number").optional(),
 });
 
+export type NearbyBeachQueryInput = z.infer<typeof nearbyBeachQuerySchema>;
 export type CardinalDirectionInput = z.infer<typeof cardinalDirectionEnum>;
 export type BottomTypeInput = z.infer<typeof bottomTypeEnum>;
 export type CreateBeachInput = z.infer<typeof createBeachSchema>;
