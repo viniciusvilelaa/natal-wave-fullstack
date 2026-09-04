@@ -51,6 +51,18 @@ export const searchBeachQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 
+export const nearbyBeachQuerySchema = z.object({
+  latitude: z
+    .coerce.number()
+    .min(-90, "Latitude must be between -90 and 90")
+    .max(90, "Latitude must be between -90 and 90"),
+  longitude: z
+    .coerce.number()
+    .min(-180, "Longitude must be between -180 and 180")
+    .max(180, "Longitude must be between -180 and 180"),
+  radius: z.coerce.number().positive("Radius must be a positive number").optional(),
+});
+
 export type CardinalDirectionInput = z.infer<typeof cardinalDirectionEnum>;
 export type BottomTypeInput = z.infer<typeof bottomTypeEnum>;
 export type CreateBeachInput = z.infer<typeof createBeachSchema>;
