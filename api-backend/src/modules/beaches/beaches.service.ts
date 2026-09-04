@@ -1,18 +1,40 @@
 import { beachesRepository } from "./beaches.repository";
 import { ApiError } from "../../utils/api-error";
-import { BeachIdParamInput, CreateBeachInput, SearchBeachQueryInput } from "./beaches.validation";
+import { env } from "../../config/env";
+import { BeachIdParamInput, CreateBeachInput, NearbyBeachQueryInput, SearchBeachQueryInput } from "./beaches.validation";
+import { haversineDistanceKm } from "../../utils/geo";
 
 
-export async function createBeach(data: CreateBeachInput){
+export async function createBeach(data: CreateBeachInput) {
     const beachExists = await beachesRepository.findByNameAndCity(data.name, data.city);
 
-    if(beachExists){
+    if (beachExists) {
         throw new ApiError(409, "Beach already exists in this city");
     }
 
     const createdBeach = await beachesRepository.createBeach(data);
 
     return createdBeach
+
+}
+
+export async function searchNearbyBeaches(query: NearbyBeachQueryInput) {
+
+    const searchRadius = query.radius ?? env.NEARBY_BEACH_RADIUS_KM;
+
+    const allBeaches = await beachesRepository.findAll();
+
+    const possibleBeaches = allBeaches.map((beach) => {
+
+        const distance = haversineDistanceKm(query.latitude, query.longitude, beach.latitude, beach.longitude);
+
+        return { beach, distance }
+    });
+
+    const filtredBeachs = possibleBeaches.filter((item) => item.distance <= searchRadius)
+            .sort((a, b) => a.distance - b.distance);
+
+    return filtredBeachs
 
 }
 
