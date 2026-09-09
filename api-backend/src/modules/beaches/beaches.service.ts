@@ -1,7 +1,8 @@
 import { beachesRepository } from "./beaches.repository";
 import { ApiError } from "../../utils/api-error";
 import { env } from "../../config/env";
-import { BeachIdParamInput, CreateBeachInput, NearbyBeachQueryInput, SearchBeachQueryInput } from "./beaches.validation";
+import { Prisma } from "../../generated/prisma/client";
+import { BeachIdParamInput, CreateBeachInput, NearbyBeachQueryInput, SearchBeachQueryInput, UpdateBeachInput } from "./beaches.validation";
 import { haversineDistanceKm } from "../../utils/geo";
 
 
@@ -67,5 +68,23 @@ export async function findBeachById(beachId: string) {
     }
 
     return beach
+
+}
+
+export async function updateBeach(beachId: string, data: UpdateBeachInput){
+
+    if (!beachId) {
+        throw new ApiError(400, "Beach Id is required");
+    }
+
+    try{
+        const updatedBeach = await beachesRepository.update(beachId, data)
+        return updatedBeach
+    }catch (err){
+        if(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025"){
+            throw new ApiError(404,"Beach not found");
+        }
+        throw err
+    }
 
 }
