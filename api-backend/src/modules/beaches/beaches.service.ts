@@ -40,14 +40,12 @@ export async function searchNearbyBeaches(query: NearbyBeachQueryInput) {
 }
 
 
-export async function findMany(filters: SearchBeachQueryInput) {
+export async function searchBeaches(filters: SearchBeachQueryInput) {
 
 
     const [beaches, total] = await beachesRepository.findMany(filters);
 
-    if (beaches.length < 1) {
-        throw new ApiError(200, "No beaches are found");
-    }
+    
 
     return { data: beaches, pagination: { page: filters.page, limit: filters.limit, total, totalPages: Math.ceil(total / filters.limit) } }
 
