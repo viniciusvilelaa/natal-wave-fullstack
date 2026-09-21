@@ -25,18 +25,18 @@ export async function searchNearbyBeaches(query: NearbyBeachQueryInput) {
 
     const allBeaches = await beachesRepository.findAll();
 
-    const possibleBeaches = allBeaches.map((beach) => {
+    const beachesWithDistance = allBeaches.map((beach) => {
 
         const distance = haversineDistanceKm(query.latitude, query.longitude, beach.latitude, beach.longitude);
 
         return { beach, distance }
     });
 
-    const filtredBeachs = possibleBeaches.filter((item) => item.distance <= searchRadius)
-            .sort((a, b) => a.distance - b.distance);
+    const nearbyBeaches = beachesWithDistance.filter((item) => item.distance <= searchRadius)
+            .sort((a, b) => a.distance - b.distance)
+            .map((item) => item.beach);
 
-    return filtredBeachs
-
+    return nearbyBeaches;
 }
 
 
