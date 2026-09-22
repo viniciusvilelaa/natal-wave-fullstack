@@ -1,6 +1,6 @@
 import * as beachesService from "../beaches/beaches.service";
 import { Request, Response } from "express";
-import { BeachIdParamInput, SearchBeachQueryInput, UpdateBeachInput } from "./beaches.validation";
+import { BeachIdParamInput, NearbyBeachQueryInput, SearchBeachQueryInput, UpdateBeachInput } from "./beaches.validation";
 
 //Create a beach
 export async function createBeach(req: Request, res: Response) {
@@ -34,4 +34,12 @@ export async function search(req: Request, res: Response) {
 
 
     res.status(200).json(beachesWithPagination);
+}
+
+export async function searchNearbyBeaches(req: Request, res: Response){
+    const location = req.query as unknown as NearbyBeachQueryInput;
+
+    const nearbyBeaches = await beachesService.searchNearbyBeaches(location);
+
+    res.status(200).json(nearbyBeaches);
 }
