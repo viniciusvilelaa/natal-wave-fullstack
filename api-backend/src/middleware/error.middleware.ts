@@ -21,6 +21,11 @@ export function errorMiddleware(
     });
   }
 
+  // Erro de parse de JSON do body-parser (ex: vírgula sobrando ou sintaxe inválida)
+  if (err instanceof SyntaxError && "status" in err && (err as any).status === 400) {
+    return res.status(400).json({ error: "Invalid JSON payload" });
+  }
+
   console.error(err);
 
   return res.status(500).json({
