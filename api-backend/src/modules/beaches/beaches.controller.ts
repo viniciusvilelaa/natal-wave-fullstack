@@ -28,7 +28,7 @@ export async function findById(req: Request, res: Response) {
 
 //Recive filters by query and answer with beaches and pagination
 export async function search(req: Request, res: Response) {
-    const filters = req.query as unknown as SearchBeachQueryInput;
+    const filters = res.locals.query as SearchBeachQueryInput;
 
     const beachesWithPagination = await beachesService.searchBeaches(filters);
 
@@ -37,7 +37,7 @@ export async function search(req: Request, res: Response) {
 }
 
 export async function searchNearbyBeaches(req: Request, res: Response){
-    const location = req.query as unknown as NearbyBeachQueryInput;
+    const location = res.locals.query as NearbyBeachQueryInput;
 
     const nearbyBeaches = await beachesService.searchNearbyBeaches(location);
 

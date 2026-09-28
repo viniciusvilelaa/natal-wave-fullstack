@@ -14,7 +14,8 @@ export const bottomTypeEnum = z.enum(
   }
 );
 
-export const createBeachSchema = z.object({
+// Base fields without defaults, so updateBeachSchema.partial() does not inject values on PATCH
+const beachBaseSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters long").max(100),
   city: z.string().trim().min(2, "City must be at least 2 characters long").max(100),
   state: z.string().trim().min(2, "State must be at least 2 characters long").max(100),
@@ -29,12 +30,21 @@ export const createBeachSchema = z.object({
     .number()
     .min(-180, "Longitude must be between -180 and 180")
     .max(180, "Longitude must be between -180 and 180"),
-  bestSwellDirections: z.array(cardinalDirectionEnum).default([]),
-  bestWindDirections: z.array(cardinalDirectionEnum).default([]),
+  bestSwellDirections: z.array(cardinalDirectionEnum),
+  bestWindDirections: z.array(cardinalDirectionEnum),
   bottomType: bottomTypeEnum.optional().nullable(),
 });
 
-export const updateBeachSchema = createBeachSchema.partial();
+export const createBeachSchema = beachBaseSchema.extend({
+  bestSwellDirections: z.array(cardinalDirectionEnum).default([]),
+  bestWindDirections: z.array(cardinalDirectionEnum).default([]),
+});
+
+export const updateBeachSchema = beachBaseSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
 
 export const beachIdParamSchema = z.object({
   id: z.string().cuid("Beach ID is required"),
