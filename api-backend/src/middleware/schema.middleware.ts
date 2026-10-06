@@ -8,9 +8,10 @@ export function validate(schema: ZodSchema) {
   };
 }
 
+// Express 5 exposes req.query as a read-only getter, so the parsed query lives in res.locals.query
 export function validateQuery(schema: ZodSchema) {
-  return (req: Request, _res: Response, next: NextFunction) => {
-    req.query = schema.parse(req.query) as any;
+  return (req: Request, res: Response, next: NextFunction) => {
+    res.locals.query = schema.parse(req.query);
     next()
   }
 }
