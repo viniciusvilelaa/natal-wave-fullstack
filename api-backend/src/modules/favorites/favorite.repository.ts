@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma"
 import { Beach, Prisma } from "../../generated/prisma/client";
+import { ListFavoritesQueryInput } from "./favorites.validation";
 
 export const favoriteRepository = {
 
@@ -15,13 +16,19 @@ export const favoriteRepository = {
         });
     },
 
-    listFavorites(userId: string){
-        return prisma.favorite.findMany({
-            where: {
-                userId
-            },
-            include: {beach: true}
-        });
+    listFavorites(userId: string, { page, limit }: ListFavoritesQueryInput){
+        const where: Prisma.FavoriteWhereInput = { userId };
+
+        return Promise.all([
+            prisma.favorite.findMany({
+                where,
+                include: {beach: true},
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: { createdAt: "desc" }
+            }),
+            prisma.favorite.count({where})
+        ]);
     }
 
 
