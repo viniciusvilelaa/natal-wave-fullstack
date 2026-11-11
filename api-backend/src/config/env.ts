@@ -9,6 +9,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(10, "JWT_SECRET deve ter pelo menos 10 caracteres"),
   ACCESS_TOKEN_EXPIRES_IN: z.string().default("15m"),
   REFRESH_TOKEN_EXPIRES_IN_DAYS: z.coerce.number().default(30),
+  ADMIN_API_KEY: z.string().min(32, "ADMIN_API_KEY must be at least 32 characters"),
 
   STORMGLASS_API_URL: z.string().url().default("https://api.stormglass.io/v2"),
   STORMGLASS_API_KEY: z.string().min(1, "STORMGLASS_API_KEY é obrigatória"),
