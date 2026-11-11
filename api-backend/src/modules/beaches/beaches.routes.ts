@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as beachesController from "./beaches.controller";
 import { validate, validateParams, validateQuery } from "../../middleware/schema.middleware";
+import { adminMiddleware } from "../../middleware/admin.middleware";
 import { asyncHandler } from "../../utils/async-handler";
 import { createBeachSchema, updateBeachSchema, nearbyBeachQuerySchema, searchBeachQuerySchema, BeachIdParamInput, beachIdParamSchema } from "./beaches.validation";
 
@@ -8,6 +9,7 @@ const beachesRouter = Router();
 
 beachesRouter.post(
     "/",
+    adminMiddleware,
     validate(createBeachSchema),
     asyncHandler(beachesController.createBeach)
 );
@@ -29,6 +31,7 @@ beachesRouter.get(
 
 beachesRouter.patch(
     "/:id",
+    adminMiddleware,
     validateParams(beachIdParamSchema),
     validate(updateBeachSchema),
     asyncHandler(beachesController.updateBeach)
