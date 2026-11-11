@@ -27,7 +27,7 @@ export async function registerUser(data: RegisterServiceInput) {
         passwordHash
     });
 
-    const acessToken = signToken({ sub: user.id, email: user.email });
+    const accessToken = signToken({ sub: user.id, email: user.email });
 
     const rawRefreshToken = generateRefreshToken();
     const tokenHash = hashRefreshToken(rawRefreshToken);
@@ -39,7 +39,7 @@ export async function registerUser(data: RegisterServiceInput) {
         expiresAt
     });
 
-    return { user, acessToken, refreshToken: rawRefreshToken }
+    return { user, accessToken, refreshToken: rawRefreshToken }
 }
 
 //Funcao de login de usuario, verifica credenciais e cria refresh token
@@ -160,7 +160,7 @@ export async function loginWithOAuth(provider: AuthProvider, idToken: string){
     }
 
     //Emite refresh token
-    const acessToken = signToken({sub: oauthUser.id, email: oauthUser.email});
+    const accessToken = signToken({sub: oauthUser.id, email: oauthUser.email});
     const refreshToken = generateRefreshToken();
     const hashedRefreshToken = hashRefreshToken(refreshToken);
     
@@ -170,7 +170,7 @@ export async function loginWithOAuth(provider: AuthProvider, idToken: string){
         expiresAt: getRefreshTokenExpiryDate()
     });
 
-    return {acessToken, refreshToken, user: {id: oauthUser.id, email: oauthUser.email, name: oauthUser.name}}
+    return {accessToken, refreshToken, user: {id: oauthUser.id, email: oauthUser.email, name: oauthUser.name}}
 
     
 }
